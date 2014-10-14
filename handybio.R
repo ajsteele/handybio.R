@@ -41,7 +41,8 @@ dataFrame2GRanges <- function(df, excludeCols = NULL, keepMeta = TRUE,
   }
   # if the chromosome names aren't defined somewhere, throw an error
   if (!any(c("chr", "seqnames") %in% names(df))) {
-      stop('You need to include chromosome name as chr of seqnames')
+      stop('You need to include chromosome name as a column called chr or ',
+           'seqnames')
   # if they are, make sure naming is consistent with the rest of the script
   } else if ("seqnames" %in% names(df)) {
       names(df)[names(df) == "seqnames"] <- "chr"
@@ -65,11 +66,10 @@ dataFrame2GRanges <- function(df, excludeCols = NULL, keepMeta = TRUE,
   # if we're keeping metadata, append those columns not already used to the
   # GRanges object as metadata
   if(keepMeta) {
-    elementMetadata(gr) <- df[ , 
-        !(names(df) %in% c("chr", "start", "end", "width", "strand",
-                           excludeCols)
-        )
-        ]
+    mcols(gr) <- df[ , 
+     !(names(df) %in% c("chr", "start", "end", "width", "strand", excludeCols)),
+     drop = FALSE # return a data frame even if only one column--preserves name
+                   ]
   }
   # finally, make the rownames consistent
   names(gr) <- rownames(df)
