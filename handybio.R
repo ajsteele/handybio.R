@@ -31,13 +31,19 @@ dataFrame2GRanges <- function(df, excludeCols = NULL, keepMeta = TRUE,
   #   Inspired by Kasper Daniel Hansen's function data.frame2GRanges at
   #   https://stat.ethz.ch/pipermail/bioconductor/2011-November/042333.html
   
-  # if df isn't a data frame,
+  # if df isn't a data frame
   if(class(df) != "data.frame") {
     stop(paste0(deparse(substitute(df)), ' is not a data frame.'))
   }
   # if there aren't two of start, end or width, throw an error
   if (sum(c("start", "end", "width") %in% names(df)) < 2) {
-      stop('You need at least two of: start, end, width')
+    if (sum(c("start", "end", "width") %in% names(df)) < 2) {
+      error.info <- 'you have none!'
+      } else {
+        error.info <- paste('you have only',
+          c("start", "end", "width")[c("start", "end", "width") %in% names(df)])
+      }
+    stop(paste0('You need at least two of: start, end, width'))
   }
   # if the chromosome names aren't defined somewhere, throw an error
   if (!any(c("chr", "seqnames") %in% names(df))) {
@@ -61,7 +67,7 @@ dataFrame2GRanges <- function(df, excludeCols = NULL, keepMeta = TRUE,
                 ranges = IRanges(start = df$start,
                                  end   = df$end,
                                  width = df$width),
-                strand = ifelse(keepStrand, df$strand, "*")
+                strand = (if(keepStrand) df$strand else "*")
                 )
   # if we're keeping metadata, append those columns not already used to the
   # GRanges object as metadata
