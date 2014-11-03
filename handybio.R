@@ -3,6 +3,7 @@
 ################################################################################
 
 require(GenomicRanges)
+source('lib/handy.R')
 
 
 ################################################################################
@@ -81,4 +82,75 @@ dataFrame2GRanges <- function(df, excludeCols = NULL, keepMeta = TRUE,
   names(gr) <- rownames(df)
   # and return the GRanges object
   gr
+}
+
+################################################################################
+###  BIOLOGY  ##################################################################
+################################################################################
+
+getRestrictionFragments <- function(sequence, restriction.site) {
+  # Takes a DNA sequence or sequences in a DNAStringSet and returns a GRanges
+  # object containing the fragments which that sequence would be cut into.
+  #
+  # Args:
+  #    sequence: DNAStringSet object containing a sequence or sequences.
+  # restriction.site: string containing the DNA sequence bound by the
+  #              restriction enzyme, including a ^ character at the point where
+  #              the enzyme cuts, eg 'A^AGCTT' for HindIII (see
+  #              http://en.wikipedia.org/wiki/HindIII)
+  #
+  # Returns:
+  #   GRanges object containing restriction fragments.
+  #
+  # Credits:
+  #   Inspired by the .getRestrictionSitesFromBSgenome function in Borbala
+  #   Mifsud and Robert Sugar's GOTHiC Bioconductor package.
+  #   http://www.bioconductor.org/packages/release/bioc/html/GOTHiC.html
+
+  # find out how many base pairs from the 5' end of the restriction site the
+  # enzyme cuts (subtract one because the ^ is not part of the sequence!)
+  cut.pos <- strPos('^', restriction.site) - 1
+  if(cut.pos == -2) {
+    stop(paste0("There is no cut site (^) in your restriction.site string, '",
+                restriction.site,"' (there should be exactly 1)"))
+  } else if(length(cut.pos) > 1) {
+    stop(paste0("There are multiple cut sites (^) in your restriction.site ",
+                "string, '", restriction.site,"' (there should be exactly 1)"))
+  }
+  # remove ^ character from restriction site
+  restriction.site <- sub('\\^', '', restriction.site)
+  # find locations where restriction enzyme cuts for all chromosomes
+  matches <- vmatchPattern(restriction.site, sequence)
+
+  # return a GRanges object of the fragments
+  GRanges(seqnames = rep(names(matches), sapply(matches, length) + 1),
+          ranges =
+        IRanges(start =
+                  unlist(
+                    lapply(
+                      1:length(matches), # for each chromosome
+                      function(i) {
+                        c(1, # the first fragment starts at the chromosome start
+                          # and the next ones start at the match site plus the
+                          # offset to the point of actual enzyme-cutting
+                          start(matches[[i]]) + cut.pos)
+                      }
+                    )
+                  ),
+                end = 
+                  unlist(
+                    lapply(
+                      1:length(matches), # for each chromosome
+                      function(i) {
+                        # the last fragment ends at the end of the chromosome,
+                        # and the preceding ones start at the match site plus
+                        # the offset to the point of actual enzyme-cutting,
+                        # plus 1 so they don't overlap...
+                        c(start(matches[[i]]) + cut.pos - 1,
+                          width(sequence)[i])
+                      }
+                    )
+                  )
+                )
+    )
 }
