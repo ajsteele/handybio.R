@@ -4,6 +4,7 @@
 
 require(GenomicRanges)
 require(rtracklayer)
+require(ShortRead)
 require(biovizBase)
 
 source('handy.R')
