@@ -85,6 +85,49 @@ dataFrame2GRanges <- function(df, excludeCols = NULL, keepMeta = TRUE,
 }
 
 ################################################################################
+###  GENOMES  ##################################################################
+################################################################################
+
+liftOverPlus <- function(gr, liftover.chain.file, discard.nonunique = TRUE) {
+  # Wrapper function for liftOver from rtracklayer to save some typing and deal
+  # with nonunique/unliftable coordinates.
+  #
+  # Args:
+  #      gr: GRanges object to be lifted over.
+  # liftover.chain.file: string containing the name of the chain file to use.
+  # discard.nonunique: logical determining whether the returned object will
+  #          contain either coordinates which lift over to no locations, or
+  #          multiple ones. TRUE discards, FALSE retains. (At present the zero-
+  #          location coordinates are discarded regardless on flattening. Is
+  #          there a better way?)
+  #
+  # Returns:
+  #   GRanges object containing coordinates in your preferred mapping.
+
+  # prepare for liftover! import the chain file
+  liftover.chain <- import.chain(liftover.chain.file)
+  # perform the liftover
+  lifted.over <- liftOver(gr, liftover.chain)
+  
+  # if the user wants to discard those locations which don't map uniquely, then
+  # do so
+  if(discard.nonunique) {
+    liftover.valid <- which(
+      sapply(start(lifted.over), function(x){length(x) == 1}) |
+      sapply(end(lifted.over),   function(x){length(x) == 1})
+    )
+
+    # return a GRanges object, with the bad ones excluded
+    return(flatGrl(lifted.over[liftover.valid]))
+  # if we aren't meant to discard
+  } else {
+    return(flatGrl(lifted.over))
+    # (flatGrl discards the integer(0) list elements returned where there are no
+    # matches found...is there a better way to encode their absence?)
+  }
+}
+
+################################################################################
 ###  BIOLOGY  ##################################################################
 ################################################################################
 
