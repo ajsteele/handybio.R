@@ -3,6 +3,9 @@
 ################################################################################
 
 require(GenomicRanges)
+require(rtracklayer)
+require(biovizBase)
+
 source('handy.R')
 
 
