@@ -11,6 +11,42 @@ source('handy.R')
 
 
 ################################################################################
+###  GRANGES  ##################################################################
+################################################################################
+
+GRangesRange <- function(...) {
+  # Find the range of positions encompassed by one or more GRanges objects.
+  #
+  # Args:
+  #      ...: One or more GRanges objects.
+  #
+  # Returns:
+  #   GRanges object spanning their range.
+  grs <- list(...)
+  gnm <- unique(unlist(lapply(grs, function(x){as.character(genome(x))})))
+  if(length(gnm) != 1) {
+    warning(paste0('The genomes differ between the GRanges ',
+      'provided. GRangesRange does not work unless all sequences are from the ',
+      'same genome.\ngenomes: ', paste(gnm, collapse=', ')))
+  }
+  sn <- unique(unlist(lapply(grs, function(x){as.character(seqnames(x))})))
+  if(length(sn) != 1) {
+    stop(paste0('The seqnames (eg chromosome) differ between the GRanges ',
+      'provided. GRangesRange does not work unless all sequences are from the ',
+      'same chromosome.\nseqnames: ', paste(sns, collapse=', ')))
+  }
+  min.start <- min(unlist(lapply(grs, start)))
+  max.end <- max(unlist(lapply(grs, start)))
+  
+  GRanges(
+    seqnames = sn,
+    seqinfo = Seqinfo(sn, genome=gnm),
+    ranges = IRanges(start = min.start,
+                     end   = max.end)
+  )
+}
+
+################################################################################
 ###  GENOMES  ##################################################################
 ################################################################################
 
