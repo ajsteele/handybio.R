@@ -33,7 +33,7 @@ GRangesRange <- function(...) {
   if(length(sn) != 1) {
     stop(paste0('The seqnames (eg chromosome) differ between the GRanges ',
       'provided. GRangesRange does not work unless all sequences are from the ',
-      'same chromosome.\nseqnames: ', paste(sns, collapse=', ')))
+      'same chromosome.\nseqnames: ', paste(sn, collapse=', ')))
   }
   min.start <- min(unlist(lapply(grs, start)))
   max.end <- max(unlist(lapply(grs, start)))
