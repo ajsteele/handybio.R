@@ -36,7 +36,7 @@ GRangesRange <- function(...) {
       'same chromosome.\nseqnames: ', paste(sn, collapse=', ')))
   }
   min.start <- min(unlist(lapply(grs, start)))
-  max.end <- max(unlist(lapply(grs, start)))
+  max.end <- max(unlist(lapply(grs, end)))
   
   GRanges(
     seqnames = sn,
