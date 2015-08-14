@@ -7,7 +7,10 @@ require(rtracklayer)
 require(ShortRead)
 require(biovizBase)
 
-source('handy.R')
+# This script depends on handy.R (see https://github.com/ajsteele/handy.R), so
+# make sure you source it before running this file. If you've not sourced it
+# already, put it in an appropriate location and uncomment this line.
+# source('handy.R')
 
 
 ################################################################################
