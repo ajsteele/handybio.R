@@ -96,6 +96,35 @@ liftOverPlus <- function(gr, liftover.chain.file, discard.nonunique = TRUE) {
 ###  BIOLOGY  ##################################################################
 ################################################################################
 
+revComp <- function(x) {
+  # Finds the reverse complement of a DNA sequence provided as a character or
+  # vector of characters.
+  #
+  # Args:
+  #     x: A character or vector of characters containing A, C, T and G; case-
+  #        insensitive.
+  #
+  # Returns:
+  #   The reverse complement of all the elements of x.
+  unlist(
+    lapply(
+      strsplit(x,''),# needs to be split into a vector so rev will work
+      function(y) {
+        paste(
+          rev(
+            chartr(
+              # upper and lower case
+              "ATGCatgc", "TACGtacg",
+              y
+            )
+          ),
+          collapse=""
+        )
+      }
+    )
+  )
+}
+
 getRestrictionFragments <- function(sequence, restriction.site) {
   # Takes a DNA sequence or sequences in a DNAStringSet and returns a GRanges
   # object containing the fragments which that sequence would be cut into.
